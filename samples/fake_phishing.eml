@@ -1,0 +1,32 @@
+From: security@paypa1-support.com
+Reply-To: attacker@evil.xyz
+Return-Path: bounce@phishing-farm.tk
+Subject: URGENT: Your PayPal account has been suspended!
+Date: Mon, 11 Mar 2026 08:23:11 -0500
+To: victim@example.com
+
+Dear Customer,
+
+We have detected unusual activity on your PayPal account. Your account has been suspended due to unauthorized access from IP address 185.220.101.45.
+
+ACTION REQUIRED IMMEDIATELY - You must verify your account within 24 hours or it will be permanently deleted.
+
+Please click the link below to verify your identity and restore access:
+http://192.168.1.100/paypal-verify/login?token=abc123
+
+Or visit: https://paypa1-secure-login.xyz/verify
+
+Your account details:
+- Please provide your Social Security Number for verification
+- Credit card number and CVV required
+- Bank account and routing number needed
+
+This is your final notice. Act now to avoid permanent suspension.
+
+Kindly click here to update your payment information immediately.
+
+Download our security tool: security-update.exe
+
+Thank you for your cooperation.
+
+PayPal Security Team

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishingDetector | Email Threat Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e1a;
+            color: #e0e6ff;
+            font-family: 'Syne', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: linear-gradient(135deg, #0d1225 0%, #111827 100%);
+            border-bottom: 1px solid #1e3a5f;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon { font-size: 2rem; }
+
+        .header-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #4fc3f7;
+            letter-spacing: 2px;
+        }
+
+        .header-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: #546e7a;
+            margin-top: 2px;
+        }
+
+        .header-badge {
+            margin-left: auto;
+            background: #0d2137;
+            border: 1px solid #1e3a5f;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: #4fc3f7;
+        }
+
+        /* ── MAIN ── */
+        .main { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+        /* ── UPLOAD SECTION ── */
+        .upload-section {
+            background: #0d1225;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: #4fc3f7;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #1e3a5f;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: 1px solid #1e3a5f;
+            background: transparent;
+            color: #546e7a;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #0d2137;
+            border-color: #4fc3f7;
+            color: #4fc3f7;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed #1e3a5f;
+            border-radius: 10px;
+            padding: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: #4fc3f7;
+            background: #0d2137;
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .drop-icon { font-size: 3rem; margin-bottom: 15px; }
+
+        .drop-text {
+            font-size: 1rem;
+            color: #78909c;
+            margin-bottom: 8px;
+        }
+
+        .drop-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: #37474f;
+        }
+
+        /* Text area */
+        .email-textarea {
+            width: 100%;
+            height: 220px;
+            background: #060910;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            color: #e0e6ff;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            padding: 16px;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .email-textarea:focus { border-color: #4fc3f7; }
+
+        .email-textarea::placeholder { color: #37474f; }
+
+        /* Analyze button */
+        .analyze-btn {
+            margin-top: 16px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1565c0, #0d47a1);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .analyze-btn:hover {
+            background: linear-gradient(135deg, #1976d2, #1565c0);
+            transform: translateY(-1px);
+        }
+
+        .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ── PROGRESS ── */
+        .progress-section {
+            display: none;
+            background: #0d1225;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar-container {
+            background: #060910;
+            border-radius: 4px;
+            height: 6px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1565c0, #4fc3f7);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .progress-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: #4fc3f7;
+            margin-top: 10px;
+        }
+
+        /* ── RESULTS ── */
+        .results-section { display: none; }
+
+        /* Score card */
+        .score-card {
+            background: #0d1225;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #1e3a5f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .score-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: #546e7a;
+            letter-spacing: 2px;
+        }
+
+        .verdict-info { flex: 1; }
+
+        .verdict-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+        }
+
+        .verdict-description {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: #78909c;
+            line-height: 1.6;
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #0d1225;
+            border: 1px solid #1e3a5f;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: #546e7a;
+            letter-spacing: 2px;
+        }
+
+        /* Flags */
+        .flags-section {
+            background: #0d1225;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .flag-item {
+            background: #060910;
+            border-left: 3px solid #546e7a;
+            border-radius: 0 8px 8px 0;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .flag-item.CRITICAL { border-left-color: #ff1744; }
+        .flag-item.HIGH { border-left-color: #ff4444; }
+        .flag-item.MEDIUM { border-left-color: #ffaa00; }
+        .flag-item.LOW { border-left-color: #00cc66; }
+
+        .flag-severity {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .flag-severity.CRITICAL { background: #2d0a0a; color: #ff1744; }
+        .flag-severity.HIGH { background: #2d0f0f; color: #ff4444; }
+        .flag-severity.MEDIUM { background: #2d1f00; color: #ffaa00; }
+        .flag-severity.LOW { background: #0d2d1a; color: #00cc66; }
+
+        .flag-content { flex: 1; }
+
+        .flag-category {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: #e0e6ff;
+        }
+
+        .flag-detail {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.72rem;
+            color: #78909c;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+
+        /* URLs section */
+        .urls-section {
+            background: #0d1225;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .url-item {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.72rem;
+            color: #4fc3f7;
+            padding: 8px 12px;
+            background: #060910;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            word-break: break-all;
+        }
+
+        .no-flags {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: #00cc66;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Reset button */
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            color: #546e7a;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover { border-color: #4fc3f7; color: #4fc3f7; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: #263238;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-icon">🎣</div>
+    <div>
+        <div class="header-title">PHISHING DETECTOR</div>
+        <div class="header-sub">EMAIL THREAT ANALYSIS ENGINE v1.0</div>
+    </div>
+    <div class="header-badge">🛡️ SOC ANALYST TOOL</div>
+</div>
+
+<div class="main">
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+        <div class="section-title">📧 EMAIL INPUT</div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('paste')">Paste Email</button>
+            <button class="tab" onclick="switchTab('upload')">Upload File</button>
+        </div>
+
+        <form id="analyzeForm">
+            <!-- Paste tab -->
+            <div class="tab-content active" id="tab-paste">
+                <textarea class="email-textarea" name="email_text" id="emailText"
+                    placeholder="Paste the full email content here including headers...
+
+Example:
+From: security@paypa1.com
+Reply-To: attacker@evil.xyz
+Subject: URGENT: Your account has been suspended!
+
+Dear Customer,
+Please click here immediately to verify your account..."></textarea>
+            </div>
+
+            <!-- Upload tab -->
+            <div class="tab-content" id="tab-upload">
+                <div class="drop-zone" id="dropZone">
+                    <input type="file" name="email_file" id="fileInput" accept=".eml,.txt,.msg">
+                    <div class="drop-icon">📂</div>
+                    <div class="drop-text">Drop email file here or click to browse</div>
+                    <div class="drop-sub">Supports .eml, .txt, .msg files</div>
+                </div>
+            </div>
+
+            <button type="submit" class="analyze-btn" id="analyzeBtn">
+                🔍 ANALYZE EMAIL
+            </button>
+        </form>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-section" id="progressSection">
+        <div class="section-title">⚙️ ANALYZING</div>
+        <div class="progress-status" id="progressStatus">Parsing email headers...</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section" id="resultsSection">
+
+        <!-- Score card -->
+        <div class="score-card" id="scoreCard">
+            <div class="score-circle" id="scoreCircle">
+                <div class="score-number" id="scoreNumber">0</div>
+                <div class="score-label">RISK SCORE</div>
+            </div>
+            <div class="verdict-info">
+                <div class="verdict-badge" id="verdictBadge">—</div>
+                <div class="verdict-description" id="verdictDescription">—</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-number" id="totalFlags" style="color:#4fc3f7">0</div>
+                <div class="stat-label">TOTAL FLAGS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="criticalFlags" style="color:#ff1744">0</div>
+                <div class="stat-label">CRITICAL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="highFlags" style="color:#ff4444">0</div>
+                <div class="stat-label">HIGH</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="urlCount" style="color:#ffaa00">0</div>
+                <div class="stat-label">URLS FOUND</div>
+            </div>
+        </div>
+
+        <!-- Flags -->
+        <div class="flags-section">
+            <div class="section-title">🚩 THREAT INDICATORS</div>
+            <div id="flagsList"></div>
+        </div>
+
+        <!-- URLs -->
+        <div class="urls-section" id="urlsSection" style="display:none">
+            <div class="section-title">🔗 EXTRACTED URLS</div>
+            <div id="urlsList"></div>
+        </div>
+
+        <button class="reset-btn" onclick="resetForm()">↩ Analyze Another Email</button>
+    </div>
+
+</div>
+
+<div class="footer">
+    PHISHINGDETECTOR v1.0 — Built by Lovedip Singh | SOC Portfolio Project
+</div>
+
+<script>
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    // Drag and drop
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            document.getElementById('fileInput').files = e.dataTransfer.files;
+            dropZone.querySelector('.drop-text').textContent = '✅ ' + file.name;
+        }
+    });
+
+    // Progress simulation
+    function simulateProgress(steps) {
+        let i = 0;
+        const bar = document.getElementById('progressBar');
+        const status = document.getElementById('progressStatus');
+        return new Promise(resolve => {
+            const interval = setInterval(() => {
+                if (i >= steps.length) { clearInterval(interval); resolve(); return; }
+                status.textContent = steps[i].text;
+                bar.style.width = steps[i].pct + '%';
+                i++;
+            }, 400);
+        });
+    }
+
+    document.getElementById('analyzeForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+
+        document.querySelector('.upload-section').style.display = 'none';
+        document.getElementById('progressSection').style.display = 'block';
+        document.getElementById('resultsSection').style.display = 'none';
+
+        await simulateProgress([
+            { text: 'Parsing email headers...', pct: 15 },
+            { text: 'Checking sender authentication (SPF/DKIM)...', pct: 30 },
+            { text: 'Extracting and analyzing URLs...', pct: 50 },
+            { text: 'Scanning for phishing keywords...', pct: 65 },
+            { text: 'Checking brand impersonation...', pct: 80 },
+            { text: 'Calculating risk score...', pct: 95 },
+        ]);
+
+        const formData = new FormData(this);
+        try {
+            const response = await fetch('/analyze', { method: 'POST', body: formData });
+            const data = await response.json();
+            displayResults(data);
+        } catch (err) {
+            alert('Analysis failed. Please try again.');
+            resetForm();
+        }
+
+        btn.disabled = false;
+    });
+
+    function displayResults(data) {
+        document.getElementById('progressSection').style.display = 'none';
+        document.getElementById('resultsSection').style.display = 'block';
+
+        // Score
+        document.getElementById('scoreNumber').textContent = data.score;
+        document.getElementById('scoreNumber').style.color = data.verdict_color;
+        document.getElementById('scoreCircle').style.borderColor = data.verdict_color;
+
+        // Verdict
+        const badge = document.getElementById('verdictBadge');
+        badge.textContent = data.verdict;
+        badge.style.background = data.verdict_color + '22';
+        badge.style.color = data.verdict_color;
+        badge.style.border = '1px solid ' + data.verdict_color;
+
+        // Description
+        const descriptions = {
+            'PHISHING': `⚠️ HIGH CONFIDENCE PHISHING DETECTED\nThis email exhibits ${data.total_flags} threat indicators consistent with a phishing attempt. Do NOT click any links or provide any information. Report to your security team immediately.`,
+            'SUSPICIOUS': `⚠️ SUSPICIOUS EMAIL DETECTED\nThis email shows ${data.total_flags} warning signs that require further investigation. Exercise extreme caution before interacting with this email.`,
+            'LIKELY SAFE': `✅ NO SIGNIFICANT THREATS DETECTED\nThis email shows minimal phishing indicators. Standard email security practices still apply.`
+        };
+        document.getElementById('verdictDescription').textContent = descriptions[data.verdict] || '';
+
+        // Stats
+        document.getElementById('totalFlags').textContent = data.total_flags;
+        document.getElementById('criticalFlags').textContent = data.critical_flags;
+        document.getElementById('highFlags').textContent = data.high_flags;
+        document.getElementById('urlCount').textContent = data.urls_found.length;
+
+        // Flags
+        const flagsList = document.getElementById('flagsList');
+        if (data.flags.length === 0) {
+            flagsList.innerHTML = '<div class="no-flags">✅ No threat indicators detected</div>';
+        } else {
+            flagsList.innerHTML = data.flags.map(flag => `
+                <div class="flag-item ${flag.severity}">
+                    <span class="flag-severity ${flag.severity}">${flag.severity}</span>
+                    <div class="flag-content">
+                        <div class="flag-category">${flag.category}</div>
+                        <div class="flag-detail">${flag.detail}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // URLs
+        if (data.urls_found.length > 0) {
+            document.getElementById('urlsSection').style.display = 'block';
+            document.getElementById('urlsList').innerHTML = data.urls_found.map(url =>
+                `<div class="url-item">🔗 ${url}</div>`
+            ).join('');
+        }
+    }
+
+    function resetForm() {
+        document.querySelector('.upload-section').style.display = 'block';
+        document.getElementById('progressSection').style.display = 'none';
+        document.getElementById('resultsSection').style.display = 'none';
+        document.getElementById('emailText').value = '';
+        document.getElementById('analyzeForm').reset();
+    }
+</script>
+</body>
+</html>

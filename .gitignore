@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+uploads/
+*.eml
+!samples/fake_phishing.eml
+.env
+venv/
