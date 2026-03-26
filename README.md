@@ -31,6 +31,34 @@ A Python-based phishing email analysis tool with a dark web dashboard — built 
 
 ---
 
+## 🔵 SOC Analyst Use Case
+
+Phishing triage is one of the most common Tier 1 SOC analyst tasks. PhishingDetector supports analyst workflows by enabling rapid analysis of suspicious emails reported by users — without requiring manual header inspection or URL lookup.
+
+**Typical SOC phishing workflow:**
+
+1. User reports suspicious email → ticket created in ticketing system
+2. Analyst pulls raw email content → pastes into PhishingDetector
+3. Tool extracts headers and checks SPF/DKIM authentication results
+4. URLs extracted → checked against suspicious TLD and IP pattern database
+5. Brand impersonation checked → flags if sender domain doesn't match claimed brand
+6. Risk score reviewed → PHISHING / SUSPICIOUS / LIKELY SAFE verdict returned
+7. IOCs documented → IPs, URLs, domains added to ticket as evidence
+8. Analyst escalates confirmed phishing or closes false positive
+
+**What PhishingDetector detects that matters in a SOC:**
+
+| Indicator | Why It Matters |
+|---|---|
+| SPF/DKIM failures | Confirms sender authentication failed — strong phishing signal |
+| Reply-To mismatch | Classic Business Email Compromise (BEC) indicator |
+| IP-based URLs | Legitimate services never use raw IPs — strong IOC |
+| Suspicious TLDs (.xyz, .tk, .pw) | Associated with malicious infrastructure |
+| Brand impersonation | Sender domain doesn't match claimed organization |
+| Credential harvesting language | SSN, password, credit card requests — immediate escalation trigger |
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -58,7 +86,14 @@ A sample phishing email is included:
 samples/fake_phishing.eml
 ```
 
-Upload it or paste the contents to see the analyzer in action. Expected result: **90+ PHISHING** score.
+Upload it or paste the contents to see the analyzer in action. Expected result: **100/100 PHISHING** score with 12 threat indicators detected including:
+- Header spoofing (Reply-To domain mismatch)
+- IP-based URL (raw IP address in link)
+- Suspicious domain (.xyz TLD)
+- Sensitive information request (SSN, credit card, bank account)
+- Brand impersonation (PayPal)
+- Suspicious attachment (.exe)
+- High urgency language (multiple triggers)
 
 ---
 
